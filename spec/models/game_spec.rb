@@ -74,6 +74,40 @@ RSpec.describe Game, type: :model do
         expect(game_w_questions.status).to eq(:in_progress)
         expect(game_w_questions.finished?).to be false
       end
+
+      it 'should end the game if the answer is incorrect' do
+        q = game_w_questions.current_game_question
+        expect(game_w_questions.status).to eq(:in_progress)
+
+        incorrect_answer = ([1,2,3,4] - [q.correct_answer_key])[0]
+        game_w_questions.answer_current_question!(incorrect_answer)
+
+        expect(game_w_questions.status).to eq(:fail)
+        expect(game_w_questions.finished?).to be true
+      end
+
+      it 'should end the game if the time is up' do
+        q = game_w_questions.current_game_question
+        expect(game_w_questions.status).to eq(:in_progress)
+
+        game_w_questions.created_at = Time.now - 1.hour
+        game_w_questions.answer_current_question!(q.correct_answer)
+
+        expect(game_w_questions.status).to eq(:timeout)
+        expect(game_w_questions.finished?).to be true
+      end
+
+      it 'should end the game if it has been was won' do
+        q = game_w_questions.current_game_question
+        expect(game_w_questions.status).to eq(:in_progress)
+
+        15.times do
+          game_w_questions.answer_current_question!(q.correct_answer_key)
+        end
+
+        expect(game_w_questions.status).to eq(:won)
+        expect(game_w_questions.finished?).to be true
+      end
     end
 
 
