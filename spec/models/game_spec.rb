@@ -96,6 +96,30 @@ RSpec.describe Game, type: :model do
         expect(user.balance).to eq prize
       end
     end
+
+    describe '#current_game_question' do
+      it 'should return current game question' do
+        expect(game_w_questions.current_game_question.level).to eq 0
+
+        game_w_questions
+          .answer_current_question!(game_w_questions.current_game_question.correct_answer_key)
+
+          expect(game_w_questions.current_game_question.level).to eq 1
+      end
+    end
+
+    describe '#previous_level' do
+      it 'should return previous game question level' do
+        game_w_questions
+          .answer_current_question!(game_w_questions.current_game_question.correct_answer_key)
+
+          expect(game_w_questions.previous_level).to eq 0
+      end
+
+      it 'should return -1 if the game is new' do
+        expect(game_w_questions.previous_level).to eq -1
+      end
+    end
   end
 
 
