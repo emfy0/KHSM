@@ -55,58 +55,75 @@ RSpec.describe Game, type: :model do
   # Тесты на основную игровую логику
   context 'game mechanics' do
     describe '#answer_current_question!' do
-      # Правильный ответ должен продолжать игру
-      it 'should continue game properly if the answer is correct' do
-        # Текущий уровень игры и статус
-        level = game_w_questions.current_level
-        q = game_w_questions.current_game_question
-        expect(game_w_questions.status).to eq(:in_progress)
-  
-        game_w_questions.answer_current_question!(q.correct_answer_key)
-  
-        # Перешли на след. уровень
-        expect(game_w_questions.current_level).to eq(level + 1)
-  
-        # Ранее текущий вопрос стал предыдущим
-        expect(game_w_questions.current_game_question).not_to eq(q)
-  
-        # Игра продолжается
-        expect(game_w_questions.status).to eq(:in_progress)
-        expect(game_w_questions.finished?).to be false
+      context 'when answer is wrong' do
+        let(:wrong_answer_key) { ([1,2,3,4] - [game_w_questions.current_game_question.correct_answer_key])[0] }
+    
+        before { game_w_questions.answer_current_question!(wrong_answer_key) }
+    
+        it 'should finish game' do
+          game_w_questions.answer_current_question!(wrong_answer_key)
+          expect(game_w_questions.finished?).to be true
+        end
+    
+        it 'should assign status fail' do
+          game_w_questions.answer_current_question!(wrong_answer_key)
+          expect(game_w_questions.status).to eq(:fail)
+        end
       end
-
-      it 'should end the game if the answer is incorrect' do
-        q = game_w_questions.current_game_question
-        expect(game_w_questions.status).to eq(:in_progress)
-
-        incorrect_answer = ([1,2,3,4] - [q.correct_answer_key])[0]
-        game_w_questions.answer_current_question!(incorrect_answer)
-
-        expect(game_w_questions.status).to eq(:fail)
-        expect(game_w_questions.finished?).to be true
-      end
-
-      it 'should end the game if the time is up' do
-        q = game_w_questions.current_game_question
-        expect(game_w_questions.status).to eq(:in_progress)
-
-        game_w_questions.created_at = Time.now - 1.hour
-        game_w_questions.answer_current_question!(q.correct_answer)
-
-        expect(game_w_questions.status).to eq(:timeout)
-        expect(game_w_questions.finished?).to be true
-      end
-
-      it 'should end the game if it has been was won' do
-        q = game_w_questions.current_game_question
-        expect(game_w_questions.status).to eq(:in_progress)
-
-        15.times do
-          game_w_questions.answer_current_question!(q.correct_answer_key)
+    
+      context 'when answer is correct' do
+        let(:correct_answer_key) do
+          game_w_questions.current_game_question.correct_answer_key
         end
 
-        expect(game_w_questions.status).to eq(:won)
-        expect(game_w_questions.finished?).to be true
+        context 'and question is last' do
+          let!(:last_level) { game_w_questions.current_level = 14 }
+          let!(:answer_last_question) { game_w_questions.answer_current_question!(correct_answer_key) }
+
+          it 'should assign final prize' do
+            expect(game_w_questions.prize).to eq 1_000_000
+          end
+
+          it 'should finish game' do
+            expect(game_w_questions.finished?).to be true
+          end
+    
+          it 'should assign status won' do
+            expect(game_w_questions.status).to eq(:won)
+          end
+        end
+    
+        context 'and question is not last' do
+          let!(:level) { game_w_questions.current_level = 2 }
+          let!(:answer_question) { game_w_questions.answer_current_question!(correct_answer_key) }
+
+          it 'should increase the current level by 1' do
+            expect(game_w_questions.current_level).to eq(2 + 1)
+          end
+    
+          it 'should not finish game' do
+            expect(game_w_questions.finished?).to be false
+          end
+    
+          it 'should stay in progress status' do
+            expect(game_w_questions.status).to eq(:in_progress)
+          end
+        end
+    
+        context 'and time is over ' do
+          let!(:time_is_up) do
+             game_w_questions.created_at = Time.now - 1.hour
+             game_w_questions.answer_current_question!(correct_answer_key)
+          end
+    
+          it 'should finish game' do
+            expect(game_w_questions.finished?).to be true
+          end
+    
+          it 'should assign status timeout' do
+            expect(game_w_questions.status).to eq(:timeout)
+          end
+        end
       end
     end
 
