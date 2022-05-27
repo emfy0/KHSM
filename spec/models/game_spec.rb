@@ -10,6 +10,9 @@ require 'support/my_spec_helper'
 #
 # В идеале — все методы должны быть покрыты тестами, в этом классе содержится
 # ключевая логика игры и значит работы сайта.
+
+MAX_PRIZE = 1_000_000.freeze
+
 RSpec.describe Game, type: :model do
   # Пользователь для создания игр
   let(:user) { FactoryBot.create(:user) }
@@ -56,7 +59,9 @@ RSpec.describe Game, type: :model do
   context 'game mechanics' do
     describe '#answer_current_question!' do
       context 'when answer is wrong' do
-        let(:wrong_answer_key) { ([1,2,3,4] - [game_w_questions.current_game_question.correct_answer_key])[0] }
+        let(:wrong_answer_key) do
+           ([1,2,3,4] - [game_w_questions.current_game_question.correct_answer_key]).sample
+        end
     
         before { game_w_questions.answer_current_question!(wrong_answer_key) }
     
@@ -77,11 +82,11 @@ RSpec.describe Game, type: :model do
         end
 
         context 'and question is last' do
-          let!(:last_level) { game_w_questions.current_level = 14 }
+          before { game_w_questions.current_level = 14 }
           let!(:answer_last_question) { game_w_questions.answer_current_question!(correct_answer_key) }
 
           it 'should assign final prize' do
-            expect(game_w_questions.prize).to eq 1_000_000
+            expect(game_w_questions.prize).to eq MAX_PRIZE
           end
 
           it 'should finish game' do
@@ -98,7 +103,7 @@ RSpec.describe Game, type: :model do
           let!(:answer_question) { game_w_questions.answer_current_question!(correct_answer_key) }
 
           it 'should increase the current level by 1' do
-            expect(game_w_questions.current_level).to eq(2 + 1)
+            expect(game_w_questions.current_level).to eq(3)
           end
     
           it 'should not finish game' do
@@ -112,7 +117,7 @@ RSpec.describe Game, type: :model do
     
         context 'and time is over ' do
           let!(:time_is_up) do
-             game_w_questions.created_at = Time.now - 1.hour
+             game_w_questions.created_at = 1.hour.ago
              game_w_questions.answer_current_question!(correct_answer_key)
           end
     
