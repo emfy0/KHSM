@@ -133,14 +133,55 @@ RSpec.describe GamesController, type: :controller do
     context 'user is logged in' do
       before(:each) { sign_in user }
 
-      it 'should accept correct answer' do
-        put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
-        game = assigns(:game)
+      context 'and should accept correct answer' do
+        before { put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key }
+        let(:seted_game) { assigns(:game) }
 
-        expect(game.finished?).to be false
-        expect(game.current_level).to be > 0
-        expect(response).to redirect_to(game_path(game))
-        expect(flash.empty?).to be true
+        it 'should not change game state to finished' do
+          expect(seted_game.finished?).to be false
+        end
+
+        it 'should increment game current level' do
+          expect(seted_game.current_level).to be > 0
+        end
+
+        it 'sholud redirect to game_path' do
+          expect(response).to redirect_to(game_path(seted_game))
+        end
+
+        it 'should not place any flashes' do
+          expect(flash.empty?).to be true
+        end
+      end
+
+      context 'and should react to incorrect answer' do
+        before do
+          incorrect_answer =
+            (%w[a b c d] - [game_w_questions.current_game_question.correct_answer_key]).sample
+
+          put :answer, id: game_w_questions.id, letter: incorrect_answer
+        end
+        let(:seted_game) { assigns(:game) }
+
+        it 'should change game state to finished' do
+          expect(seted_game.finished?).to be true
+        end
+
+        it 'should not change game current level' do
+          expect(seted_game.current_level).to be 0
+        end
+
+        it 'should change game staus to :fail' do
+          expect(seted_game.status).to eq :fail
+        end
+
+        it 'sholud redirect to user_path' do
+          expect(response).to redirect_to user_path(user)
+        end
+
+        it 'should place flashes alert message' do
+          expect(flash[:alert]).to be
+        end
       end
     end
   end
