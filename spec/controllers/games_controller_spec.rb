@@ -42,6 +42,15 @@ RSpec.describe GamesController, type: :controller do
   end
 
   describe '#create' do
+    context 'user is not authorized' do
+      it 'should not have access' do
+        get :create, id: game_w_questions.id
+        expect(response.status).to eq 302
+        expect(response).to redirect_to new_user_session_path
+        expect(flash[:alert]).to be
+      end
+    end
+
     context 'user is logged in' do
       before(:each) { sign_in user }
 
@@ -72,6 +81,16 @@ RSpec.describe GamesController, type: :controller do
   end
 
   describe '#answer' do
+    context 'user is not authorized' do
+      it 'should not have access' do
+        put :create, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
+
+        expect(response.status).to eq 302
+        expect(response).to redirect_to new_user_session_path
+        expect(flash[:alert]).to be
+      end
+    end
+
     context 'user is logged in' do
       before(:each) { sign_in user }
 
@@ -88,6 +107,16 @@ RSpec.describe GamesController, type: :controller do
   end
 
   describe '#take_money' do
+    context 'user is not authorized' do
+      it 'should not have access' do
+        put :take_money, id: game_w_questions.id
+
+        expect(response.status).to eq 302
+        expect(response).to redirect_to new_user_session_path
+        expect(flash[:alert]).to be
+      end
+    end
+
     context 'user is logged in' do
       before(:each) { sign_in user }
 
