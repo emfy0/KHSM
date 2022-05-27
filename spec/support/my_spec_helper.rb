@@ -9,4 +9,5 @@ end
 
 RSpec.configure do |c|
   c.include MySpecHelper
+  c.include FactoryBot::Syntax::Methods
 end

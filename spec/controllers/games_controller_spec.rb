@@ -2,16 +2,23 @@ require 'rails_helper'
 require 'support/my_spec_helper'
 
 RSpec.describe GamesController, type: :controller do
-  let(:user) { FactoryBot.create(:user) }
-  let(:admin) { FactoryBot.create(:user, is_admin: true) }
-  let(:game_w_questions) { FactoryBot.create(:game_with_questions, user: user) }
+  let(:user) {create(:user) }
+  let(:admin) { create(:user, is_admin: true) }
+  let(:game_w_questions) { create(:game_with_questions, user: user) }
 
   describe '#show' do
     context 'user is not authorized' do
-      it 'should not have access' do
-        get :show, id: game_w_questions.id
-        expect(response.status).not_to eq(200)
+      before { get :show, id: game_w_questions.id }
+
+      it 'should have response status 302' do
+        expect(response.status).to eq(302)
+      end
+      
+      it 'should redirect to sign_up path' do
         expect(response).to redirect_to(new_user_session_path)
+      end
+      
+      it 'should place flash alert message' do
         expect(flash[:alert]).to be
       end
     end
@@ -19,34 +26,60 @@ RSpec.describe GamesController, type: :controller do
     context 'user is logged in' do
       let!(:signed_in) { sign_in user }
 
-      it 'should have access to his game' do
-        get :show, id: game_w_questions.id
-        game = assigns(:game)
-        expect(game.finished?).to be false
-        expect(game.user).to eq(user)
+      context 'and should have access to his game' do
+        before { get :show, id: game_w_questions.id }
 
-        expect(response.status).to eq(200)
-        expect(response).to render_template('show')
+        it 'should provide unfinished game' do
+          game = assigns(:game)
+          expect(game.finished?).to be false
+        end
+
+        it 'should match user to game.user' do
+          game = assigns(:game)
+          expect(game.user).to eq(user)
+        end
+
+        it 'should have response status 200' do
+          expect(response.status).to eq(200)
+        end
+
+        it 'should render template show' do
+          expect(response).to render_template('show')
+        end
       end
 
-      it 'should not have access to alien game' do
-        alien_game = FactoryBot.create(:game_with_questions)
+      context 'and should not have access to alien game' do
+        let(:alien_game) { create(:game_with_questions) }
+        before { get :show, id: alien_game.id }
 
-        get :show, id: alien_game.id
-
-        expect(response.status).not_to eq(200)
-        expect(response).to redirect_to(root_path)
-        expect(flash[:alert]).to be
+        it 'should not have response status 200' do
+          expect(response.status).not_to eq(200)
+        end
+        
+        it 'should redirect to sign_up path' do
+          expect(response).to redirect_to(root_path)
+        end
+        
+        it 'should place flash alert message' do
+          expect(flash[:alert]).to be
+        end
       end
     end
   end
 
   describe '#create' do
     context 'user is not authorized' do
-      it 'should not have access' do
-        get :create, id: game_w_questions.id
-        expect(response.status).to eq 302
-        expect(response).to redirect_to new_user_session_path
+      before { get :create, id: game_w_questions.id }
+
+      it 'should have response status 302' do
+        expect(response.status).to eq(302)
+      end
+      
+      it 'should redirect to sign_up path' do
+        expect(response).to redirect_to(new_user_session_path)
+      end
+      
+      it 'should place flash alert message' do
         expect(flash[:alert]).to be
       end
     end
@@ -66,7 +99,7 @@ RSpec.describe GamesController, type: :controller do
         expect(flash[:notice]).to be
       end
 
-      it 'shuold not create second game' do
+      it 'should not create second game' do
         expect(game_w_questions.finished?).to be false
 
         expect { post :create }.to change(Game, :count).by(0)
@@ -82,11 +115,17 @@ RSpec.describe GamesController, type: :controller do
 
   describe '#answer' do
     context 'user is not authorized' do
-      it 'should not have access' do
-        put :create, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
+      before { put :create, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key }
 
-        expect(response.status).to eq 302
-        expect(response).to redirect_to new_user_session_path
+      it 'should have response status 302' do
+        expect(response.status).to eq(302)
+      end
+      
+      it 'should redirect to sign_up path' do
+        expect(response).to redirect_to(new_user_session_path)
+      end
+      
+      it 'should place flash alert message' do
         expect(flash[:alert]).to be
       end
     end
@@ -108,11 +147,17 @@ RSpec.describe GamesController, type: :controller do
 
   describe '#take_money' do
     context 'user is not authorized' do
-      it 'should not have access' do
-        put :take_money, id: game_w_questions.id
+      before { put :take_money, id: game_w_questions.id }
 
-        expect(response.status).to eq 302
-        expect(response).to redirect_to new_user_session_path
+      it 'should not have response status 302' do
+        expect(response.status).to eq(302)
+      end
+      
+      it 'should redirect to sign_up path' do
+        expect(response).to redirect_to(new_user_session_path)
+      end
+      
+      it 'should place flash alert message' do
         expect(flash[:alert]).to be
       end
     end
