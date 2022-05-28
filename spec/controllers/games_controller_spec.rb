@@ -229,29 +229,67 @@ RSpec.describe GamesController, type: :controller do
       expect(game_w_questions.audience_help_used).to be false
     end
 
+    it 'should not be fifty_fifty for new question' do
+      expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
+      expect(game_w_questions.fifty_fifty_used).to be false
+    end
+
     context 'user logged in' do
       before { sign_in user }
-      before { put :help, id: game_w_questions.id, help_type: :audience_help }
       let(:seted_game) { assigns(:game) }
+      
+      context 'and audience_help' do
+        before { put :help, id: game_w_questions.id, help_type: :audience_help }
 
-      it 'should not finish the game' do
-        expect(seted_game.finished?).to be false
+        it 'should not finish the game' do
+          expect(seted_game.finished?).to be false
+        end
+  
+        it 'should place audience_help flag to true' do
+          expect(seted_game.audience_help_used).to be true
+        end
+  
+        it 'should place audience_help content in help hash' do
+          expect(seted_game.current_game_question.help_hash[:audience_help]).to be
+        end
+  
+        it 'sholud place a, b, c, d in audience_help key' do
+          expect(seted_game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+        end
+  
+        it 'should redirect to game_path' do
+          expect(response).to redirect_to(game_path(seted_game))
+        end
       end
 
-      it 'should place audience_help flag to true' do
-        expect(seted_game.audience_help_used).to be true
-      end
+      context 'and fifty_fifty' do
+        before { put :help, id: game_w_questions.id, help_type: :fifty_fifty }
 
-      it 'should place audience_help content in help hash' do
-        expect(seted_game.current_game_question.help_hash[:audience_help]).to be
-      end
+        it 'should not finish the game' do
+          expect(seted_game.finished?).to be false
+        end
+  
+        it 'should place fifty_fifty flag to true' do
+          expect(seted_game.fifty_fifty_used).to be true
+        end
+  
+        it 'should place fifty_fifty content in help hash' do
+          expect(seted_game.current_game_question.help_hash[:fifty_fifty]).to be
+        end
 
-      it 'sholud place a, b, c, d in audience_help key' do
-        expect(seted_game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
-      end
+        it 'should contain 2 elements exactly' do
+          expect(seted_game.current_game_question.help_hash[:fifty_fifty].size).to eq 2
+        end
 
-      it 'should redirect to game_path' do
-        expect(response).to redirect_to(game_path(seted_game))
+        it 'should contain correct answer' do
+          correct_answer = seted_game.current_game_question.correct_answer_key
+
+          expect(seted_game.current_game_question.help_hash[:fifty_fifty]).to include(correct_answer)
+        end
+  
+        it 'should redirect to game_path' do
+          expect(response).to redirect_to(game_path(seted_game))
+        end
       end
     end
   end
