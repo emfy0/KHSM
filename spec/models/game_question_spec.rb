@@ -70,6 +70,14 @@ RSpec.describe GameQuestion, type: :model do
     it 'should not present any audience_help for new question' do
       expect(game_question.help_hash).not_to include(:audience_help)
     end
+    
+    it 'should not present any fifty_fifty for new question' do
+      expect(game_question.help_hash).not_to include(:fifty_fifty)
+    end
+
+    it 'should not present any friend_call for new question' do
+      expect(game_question.help_hash).not_to include(:friend_call)
+    end
 
     describe '#add_audience_help' do
       before { game_question.add_audience_help }
@@ -81,10 +89,6 @@ RSpec.describe GameQuestion, type: :model do
       it 'should add a, b, c, d for an :audience_help key' do
         expect(game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
       end
-    end
-
-    it 'should not present any fifty_fifty for new question' do
-      expect(game_question.help_hash).not_to include(:fifty_fifty)
     end
 
     describe '#add_fifty_fifty' do
@@ -100,6 +104,18 @@ RSpec.describe GameQuestion, type: :model do
 
       it 'should contain correct answer' do
         expect(game_question.help_hash[:fifty_fifty]).to include 'b'
+      end
+    end
+
+    describe '#add_friend_call' do
+      before { game_question.add_friend_call }
+
+      it 'should add audience_help in .help_hash' do
+        expect(game_question.help_hash).to include(:friend_call)
+      end
+
+      it 'should contain string' do
+        expect(game_question.help_hash[:friend_call]).to be_a String
       end
     end
   end
