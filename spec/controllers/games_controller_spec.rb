@@ -2,7 +2,7 @@ require 'rails_helper'
 require 'support/my_spec_helper'
 
 RSpec.describe GamesController, type: :controller do
-  let(:user) {create(:user) }
+  let(:user) { create(:user) }
   let(:admin) { create(:user, is_admin: true) }
   let(:game_w_questions) { create(:game_with_questions, user: user) }
 
@@ -85,7 +85,7 @@ RSpec.describe GamesController, type: :controller do
     end
 
     context 'user is logged in' do
-      before(:each) { sign_in user }
+      before { sign_in user }
 
       it 'sholud have access to create game' do
         generate_questions(15)
@@ -131,7 +131,7 @@ RSpec.describe GamesController, type: :controller do
     end
 
     context 'user is logged in' do
-      before(:each) { sign_in user }
+      before { sign_in user }
 
       context 'and should accept correct answer' do
         before { put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key }
@@ -157,7 +157,7 @@ RSpec.describe GamesController, type: :controller do
       context 'and should react to incorrect answer' do
         before do
           incorrect_answer =
-            (%w[a b c d] - [game_w_questions.current_game_question.correct_answer_key]).sample
+            %w[a b c d].grep_v(game_w_questions.current_game_question.correct_answer_key).sample
 
           put :answer, id: game_w_questions.id, letter: incorrect_answer
         end
@@ -204,7 +204,7 @@ RSpec.describe GamesController, type: :controller do
     end
 
     context 'user is logged in' do
-      before(:each) { sign_in user }
+      before { sign_in user }
 
       it 'shoould stops the game & update user balance' do
         game_w_questions.update_attribute(:current_level, 2)

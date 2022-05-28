@@ -184,7 +184,7 @@ RSpec.describe Game, type: :model do
   # группа тестов на проверку статуса игры
   describe '#status' do
     # перед каждым тестом "завершаем игру"
-    before(:each) do
+    before do
       game_w_questions.finished_at = Time.now
       expect(game_w_questions.finished?).to be true
     end
