@@ -117,6 +117,21 @@ RSpec.describe GameQuestion, type: :model do
       it 'should contain string' do
         expect(game_question.help_hash[:friend_call]).to be_a String
       end
+
+      it 'should contain a || b || c || d if theres no :fifty_fifty' do
+        letter = game_question.help_hash[:friend_call][-1]
+        expect(%w[A B C D].include?(letter)).to be true
+      end
+
+      it 'should contain :fifty_fifty variants if they exist' do
+        game_question.help_hash.delete(:friend_call)
+        game_question.add_fifty_fifty
+        game_question.add_friend_call
+
+        available_leeters = game_question.help_hash[:fifty_fifty].map(&:upcase)
+        letter = game_question.help_hash[:friend_call][-1]
+        expect(available_leeters.include?(letter)).to be true
+      end
     end
   end
 end
