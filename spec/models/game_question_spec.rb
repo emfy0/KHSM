@@ -32,13 +32,12 @@ RSpec.describe GameQuestion, type: :model do
       end
     end
 
-
-    #------ Вариант решения ДЗ --------------------
-
-    # тест на наличие методов делегатов level и text
-    describe '#level & #text' do
-      it 'should correctly deligates Question #level & #text methods' do
+    describe 'Question deligates' do
+      it 'should correctly work for #level' do
         expect(game_question.text).to eq(game_question.question.text)
+      end
+      
+      it 'should correctly work for #text' do
         expect(game_question.level).to eq(game_question.question.level)
       end
     end
@@ -46,6 +45,61 @@ RSpec.describe GameQuestion, type: :model do
     describe '#correct_answer_key' do
       it 'should correctly ditermine the correct answer key' do
         expect(game_question.correct_answer_key).to eq('b')
+      end
+    end
+
+    describe '#help_hash' do
+      it 'should return empty hash for new question' do
+        expect(game_question.help_hash).to eq({})
+      end
+
+     it 'should save help hashes correctly' do
+      game_question.help_hash[:some_key1] = 'blabla1'
+      game_question.help_hash['some_key2'] = 'blabla2'
+
+      expect(game_question.save).to be_truthy
+
+      gq = GameQuestion.find(game_question.id)
+
+      expect(gq.help_hash).to eq({some_key1: 'blabla1', 'some_key2' => 'blabla2'})
+     end
+    end
+  end
+
+  context 'User helpers' do
+    it 'should not present any audience_help for new question' do
+      expect(game_question.help_hash).not_to include(:audience_help)
+    end
+
+    describe '#add_audience_help' do
+      before { game_question.add_audience_help }
+
+      it 'should add audience_help in .help_hash' do
+        expect(game_question.help_hash).to include(:audience_help)
+      end
+
+      it 'should add a, b, c, d for an :audience_help key' do
+        expect(game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+      end
+    end
+
+    it 'should not present any fifty_fifty for new question' do
+      expect(game_question.help_hash).not_to include(:fifty_fifty)
+    end
+
+    describe '#add_fifty_fifty' do
+      before { game_question.add_fifty_fifty }
+
+      it 'should add audience_help in .help_hash' do
+        expect(game_question.help_hash).to include(:fifty_fifty)
+      end
+
+      it 'should contain 2 elements exactly' do
+        expect(game_question.help_hash[:fifty_fifty].size).to eq 2
+      end
+
+      it 'should contain correct answer' do
+        expect(game_question.help_hash[:fifty_fifty]).to include 'b'
       end
     end
   end

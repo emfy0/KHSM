@@ -206,7 +206,7 @@ RSpec.describe GamesController, type: :controller do
     context 'user is logged in' do
       before { sign_in user }
 
-      it 'shoould stops the game & update user balance' do
+      it 'should stops the game & update user balance' do
         game_w_questions.update_attribute(:current_level, 2)
 
         put :take_money, id: game_w_questions.id
@@ -219,6 +219,39 @@ RSpec.describe GamesController, type: :controller do
 
         expect(response).to redirect_to(user_path(user))
         expect(flash[:warning]).to be
+      end
+    end
+  end
+
+  describe '#use_help' do
+    it 'should not be audience_help for new question' do
+      expect(game_w_questions.current_game_question.help_hash[:audience_help]).not_to be
+      expect(game_w_questions.audience_help_used).to be false
+    end
+
+    context 'user logged in' do
+      before { sign_in user }
+      before { put :help, id: game_w_questions.id, help_type: :audience_help }
+      let(:seted_game) { assigns(:game) }
+
+      it 'should not finish the game' do
+        expect(seted_game.finished?).to be false
+      end
+
+      it 'should place audience_help flag to true' do
+        expect(seted_game.audience_help_used).to be true
+      end
+
+      it 'should place audience_help content in help hash' do
+        expect(seted_game.current_game_question.help_hash[:audience_help]).to be
+      end
+
+      it 'sholud place a, b, c, d in audience_help key' do
+        expect(seted_game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+      end
+
+      it 'should redirect to game_path' do
+        expect(response).to redirect_to(game_path(seted_game))
       end
     end
   end
