@@ -2,13 +2,11 @@ require 'game_help_generator'
 
 class GameQuestion < ActiveRecord::Base
   belongs_to :game
-
   belongs_to :question
 
   delegate :text, :level, to: :question, allow_nil: true
 
   validates :game, :question, presence: true
-
   validates :a, :b, :c, :d, inclusion: {in: 1..4}
 
   serialize :help_hash, Hash
