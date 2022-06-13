@@ -1,4 +1,4 @@
-# Кто хочет стать миллионером
+# Кто хочет стать миллионером (Who wants to be a millionaire)
 
 Implemented 3 types of prompts (ask the audience, 50:50 and phone a friend).
 
