@@ -13,7 +13,6 @@ gem 'jquery-rails'
 gem 'twitter-bootstrap-rails'
 gem 'font-awesome-rails'
 gem 'russian'
-gem 'pg'
 
 group :development, :test do
   gem 'sqlite3', '~> 1.3.13'
@@ -29,5 +28,6 @@ end
 group :production do
   # гем, улучшающий вывод логов на Heroku
   # https://devcenter.heroku.com/articles/getting-started-with-rails4#heroku-gems
+  gem 'pg', '~> 0.18'
   gem 'rails_12factor'
 end
