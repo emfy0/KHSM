@@ -2,7 +2,7 @@
 
 Implemented 3 types of prompts (ask the audience, 50:50 and phone a friend).
 
-Admin can load questions from files (see data folder).
+Admin can load questions from files (see `data` folder).
 
 ## Technological features
 
